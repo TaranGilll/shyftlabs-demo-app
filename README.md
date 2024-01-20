@@ -1,6 +1,6 @@
 # shyftlabs-demo-app
 
-Here are the steps to run my demo web application:
+Here are the steps to run my web application:
 1. cd front-end
 2. npm install
 3. npm start
