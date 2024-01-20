@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Template for an HTTP API that creates, updates, and deletes students in DynamoDB
+  
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+  DDBHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: helloworld.App::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StudentsTable
+      Events:
+        GetAllStudents:
+          Type: Api
+          Properties:
+            Path: /students
+            Method: GET
+            RestApiId: !Ref TableApiGateway
+        GetAStudent:
+          Type: Api
+          Properties:
+            Path: /students
+            Method: PUT
+            RestApiId: !Ref TableApiGateway
+        DeleteAStudent:
+          Type: Api
+          Properties:
+            Path: /students
+            Method: DELETE
+            RestApiId: !Ref TableApiGateway
+        CreateOrUpdateItem:
+          Type: Api
+          Properties:
+            Path: /students
+            Method: POST
+            RestApiId: !Ref TableApiGateway
+        GetAllCourses:
+          Type: Api
+          Properties:
+            Path: /courses
+            Method: GET
+            RestApiId: !Ref TableApiGateway
+        CreateCourse:
+          Type: Api
+          Properties:
+            Path: /courses
+            Method: POST
+            RestApiId: !Ref TableApiGateway
+
+  TableApiGateway:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      StageName: stage
+      Cors:
+        AllowMethods: "'GET,POST,PUT,OPTIONS,DELETE'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+
+  StudentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      AttributeDefinitions: 
+        -
+          AttributeName: "itemType"
+          AttributeType: "S"
+        -
+          AttributeName: "uniqueId"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "itemType"
+          KeyType: "HASH"
+        -
+          AttributeName: "uniqueId"
+          KeyType: "RANGE"
+      TableName: students-shyftlabs
+
+Outputs:
+  TableApiGateway:
+    Description: "The invoke URL for our API"
+    Value: !Sub "https://${TableApiGateway}.execute-api.${AWS::Region}.amazonaws.com/students"
+  Function:
+    Description: "DynamoDB handler function ARN"
+    Value: !GetAtt DDBHandlerFunction.Arn
