@@ -81,7 +81,7 @@ export default function Results() {
 
     // send data to backend for saving
     let temp = student.value;
-    temp.results = Object.fromEntries([[courseName.label, score.label]]);
+    temp.results = {...temp.results, ...Object.fromEntries([[courseName.label, score.label]])};
     fetch(
       "https://rpm45cf6jl.execute-api.us-east-1.amazonaws.com/Stage/students",
       {
@@ -182,8 +182,7 @@ export default function Results() {
               {students
                 .filter((s) => s.value.results && Object.keys(s.value.results).length > 0)
                 .map((s, index) => {
-                  const key = Object.keys(s.value.results)[0];
-
+                  return (Object.keys(s.value.results).map((key) => {
                   return (
                     <tr key={index} className="stdItem">
                       <td>{index + 1}</td>
@@ -192,7 +191,8 @@ export default function Results() {
                       <td>{s.value.results[key]}</td>
                     </tr>
                   );
-                })}
+                  })
+                )})}
             </tbody>
           </Table>
         </div>
